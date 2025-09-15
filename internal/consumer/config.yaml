@@ -1,0 +1,4 @@
+kafka_host: localhost
+kafka_port: 29092
+kafka_topic: events
+core_webhook_url: http://localhost:8080/webhook

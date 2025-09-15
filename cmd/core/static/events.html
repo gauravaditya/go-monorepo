@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Consumption Data</title>
+</head>
+<body>
+    <h1>Event Consumption Data</h1>
+    <div id="data"></div>
+    <script>
+        async function fetchData() {
+            const res = await fetch('/events-data');
+            const data = await res.json();
+            let html = '<ul>';
+            for (const event of data.events) {
+                html += `<li>${event.name} - ${event.timestamp} - Consumed: ${event.consumed}</li>`;
+            }
+            html += '</ul>';
+            document.getElementById('data').innerHTML = html;
+        }
+        fetchData();
+        setInterval(fetchData, 3000);
+    </script>
+</body>
+</html>
