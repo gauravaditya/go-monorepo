@@ -1,0 +1,27 @@
+
+<div class="consumed-events-container">
+  <h2>Consumed Events</h2>
+  <table mat-table [dataSource]="events" class="mat-elevation-z8" style="width:80%;">
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let event">{{ event.name }}</td>
+    </ng-container>
+
+    <!-- Timestamp Column -->
+    <ng-container matColumnDef="timestamp">
+      <th mat-header-cell *matHeaderCellDef>Timestamp</th>
+      <td mat-cell *matCellDef="let event">{{ event.timestamp }}</td>
+    </ng-container>
+
+    <!-- Consumed Column -->
+    <ng-container matColumnDef="consumed">
+      <th mat-header-cell *matHeaderCellDef>Consumed</th>
+      <td mat-cell *matCellDef="let event">{{ event.consumed ? 'Yes' : 'No' }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="['name', 'timestamp', 'consumed']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['name', 'timestamp', 'consumed'];"></tr>
+  </table>
+  <a matButton="outlined" routerLink="/">Back to Home</a>
+</div>

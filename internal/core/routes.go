@@ -11,6 +11,7 @@ import (
 
 	"github.com/gauravaditya/go-monorepo/api"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 // CallEventServiceWithPayload sends a single api.Event to the event service /produce endpoint
@@ -37,6 +38,9 @@ func CallEventServiceWithPayload(eventServiceURL string, ev api.Event) error {
 // RegisterRoutes registers all HTTP routes for the core service.
 func RegisterRoutes(app *fiber.App) {
 	staticDir := filepath.Join("cmd", "core", "static")
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:4200",
+	}))
 	app.Static("/", staticDir)
 	app.Post("/register", RegisterHandler)
 	app.Post("/webhook", WebhookHandler)

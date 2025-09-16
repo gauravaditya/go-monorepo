@@ -1,0 +1,19 @@
+.home-container {
+  padding: 1.5rem;
+  text-align: center;
+}
+nav {
+  margin: 1rem 0;
+  a {
+    margin: 0 1rem;
+    text-decoration: none;
+    color: #1976d2;
+    font-weight: 500;
+    &.active {
+      border-bottom: 2px solid #1976d2;
+    }
+  }
+}
+.home-content {
+  margin-top: 2rem;
+}

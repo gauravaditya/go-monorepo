@@ -1,0 +1,12 @@
+
+<form (ngSubmit)="createEvent()" class="mat-elevation-z2" style="padding:2rem; max-width:400px; margin:auto;">
+  <h2 matDialogTitle>Create Event</h2>
+  <mat-form-field appearance="outline" style="width:100%;">
+    <mat-label>Event Count</mat-label>
+    <input matInput id="count" name="count" type="number" [(ngModel)]="count" required>
+  </mat-form-field>
+  <div style="margin-top:1.5rem;">
+    <button matButton="elevated" color="primary" type="submit">Create</button>
+    <a matButton="elevated" routerLink="/" style="margin-left:1rem;">Back to Home</a>
+  </div>
+</form>
