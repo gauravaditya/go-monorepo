@@ -1,6 +1,6 @@
 
 
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
   selector: 'app-create-event',
   templateUrl: './create-event.component.html',
   styleUrls: ['./create-event.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule]
 })
 export class CreateEventComponent {

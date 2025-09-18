@@ -16,17 +16,22 @@ type CoreConfig struct {
 
 var AppConfig CoreConfig
 
-func LoadConfig() {
-	if err := yaml.Unmarshal(configData, &AppConfig); err != nil {
+func (app *App) LoadConfig() {
+	if app.hasError() {
+		return
+	}
+
+	if err := yaml.Unmarshal(configData, &app.cfg); err != nil {
 		slog.Error("Failed to parse core config.yaml", "error", err)
 		// fallback to default
-		AppConfig.EventServiceURL = "http://event:8081"
+		app.cfg.EventServiceURL = "http://event:8081"
 	}
 }
 
-func GetEventServiceURL() string {
-	if AppConfig.EventServiceURL != "" {
-		return AppConfig.EventServiceURL
+func (app *App) GetEventServiceURL() string {
+	if app.cfg.EventServiceURL != "" {
+		return app.cfg.EventServiceURL
 	}
+
 	return "http://event:8081"
 }

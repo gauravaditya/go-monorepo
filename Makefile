@@ -17,7 +17,7 @@ down:
 	docker-compose down
 
 core:
-	go run ./cmd/core/main.go -port=8080
+	go run ./cmd/core/main.go server --port=8080
 
 event:
 	go run ./cmd/event/main.go -port=8081

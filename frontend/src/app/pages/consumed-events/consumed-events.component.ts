@@ -2,7 +2,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Event } from '../../api/event.model';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
@@ -13,6 +13,7 @@ import { MatButtonModule } from '@angular/material/button';
   selector: 'app-consumed-events',
   templateUrl: './consumed-events.component.html',
   styleUrls: ['./consumed-events.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, MatTableModule, MatButtonModule]
 })
 export class ConsumedEventsComponent implements OnInit {

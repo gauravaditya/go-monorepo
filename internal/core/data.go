@@ -14,9 +14,9 @@ type Event struct {
 }
 
 // CreateEvent inserts a new event into the database
-func CreateEvent(name, timestamp string) error {
+func (app *App) CreateEvent(name, timestamp string) error {
 	event := Event{Name: name, Timestamp: timestamp, Consumed: false}
-	if err := DB.Create(&event).Error; err != nil {
+	if err := app.db.Create(&event).Error; err != nil {
 		slog.Error("CreateEvent: failed to insert event", "error", err, "name", name, "timestamp", timestamp)
 		return err
 	}
@@ -25,8 +25,8 @@ func CreateEvent(name, timestamp string) error {
 }
 
 // UpdateEventConsumed updates the consumed count for an event
-func UpdateEventConsumed(name, timestamp string, consumed bool) error {
-	res := DB.Model(&Event{}).Where("name = ? AND timestamp = ?", name, timestamp).Update("consumed", consumed)
+func (app *App) UpdateEventConsumed(name, timestamp string, consumed bool) error {
+	res := app.db.Model(&Event{}).Where("name = ? AND timestamp = ?", name, timestamp).Update("consumed", consumed)
 	if res.Error != nil {
 		slog.Error("UpdateEventConsumed: failed to update event", "error", res.Error, "name", name, "timestamp", timestamp)
 		return res.Error
@@ -40,9 +40,9 @@ func UpdateEventConsumed(name, timestamp string, consumed bool) error {
 }
 
 // GetAllEvents fetches all events from the database
-func GetAllEvents() ([]api.Event, error) {
+func (app *App) GetAllEvents() ([]api.Event, error) {
 	var dbEvents []Event
-	err := DB.Find(&dbEvents).Error
+	err := app.db.Find(&dbEvents).Error
 	if err != nil {
 		slog.Error("GetAllEvents: failed to fetch events", "error", err)
 		return nil, err

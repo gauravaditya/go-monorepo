@@ -18,8 +18,9 @@ func StartConsumer(ctx context.Context, webhookURL string, kafkaHost string, kaf
 		Brokers:   []string{broker},
 		Topic:     AppConfig.KafkaTopic,
 		Partition: 0,
-		MinBytes:  1,    // 1B
-		MaxBytes:  10e6, // 10MB
+		MinBytes:  1,                  // 1B
+		MaxBytes:  10e6,               // 10MB
+		GroupID:   "consumer-group-1", // Added GroupID for consumer group management
 	})
 	defer r.Close()
 

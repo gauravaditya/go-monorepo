@@ -1,15 +1,13 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"log/slog"
+	"os"
 
 	_ "github.com/gauravaditya/go-monorepo/docs" // swag docs
 	"github.com/gauravaditya/go-monorepo/internal/core"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/swagger"
+	"github.com/gauravaditya/go-monorepo/pkg/clicmd"
+	"github.com/gauravaditya/go-monorepo/pkg/server"
 )
 
 // @title Core Service API
@@ -18,23 +16,14 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
-	var port string
-	flag.StringVar(&port, "port", "8080", "port to listen on")
-	flag.Parse()
-	slog.Info("Starting core service", "port", port)
-	core.LoadConfig()
-	if err := core.InitDB(); err != nil {
-		slog.Error("Failed to initialize database", "error", err)
-		return
+	app := server.New("core-service")
+	coresvc := core.New(app)
+
+	root := clicmd.NewRoot("core-service")
+	root.AddCommand(clicmd.NewServer("core-service", coresvc))
+
+	if err := root.Execute(); err != nil {
+		slog.Error("Failed to start core service", "error", err)
+		os.Exit(1)
 	}
-	app := fiber.New()
-	app.Use(logger.New())
-	// Health endpoint
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.SendString("OK")
-	})
-	// Swagger UI endpoint
-	app.Get("/swagger/*", swagger.HandlerDefault)
-	core.RegisterRoutes(app)
-	app.Listen(fmt.Sprintf(":%s", port))
 }
