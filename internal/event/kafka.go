@@ -9,11 +9,11 @@ import (
 )
 
 // ProduceEventMessage publishes a single event JSON payload to Kafka
-func ProduceEventMessage(payload []byte, eventName string) error {
-	broker := fmt.Sprintf("%s:%d", AppConfig.KafkaHost, AppConfig.KafkaPort)
+func (app *App) ProduceEventMessage(payload []byte, eventName string) error {
+	broker := fmt.Sprintf("%s:%d", app.cfg.KafkaHost, app.cfg.KafkaPort)
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(broker),
-		Topic:    AppConfig.KafkaTopic,
+		Topic:    app.cfg.KafkaTopic,
 		Balancer: &kafka.LeastBytes{},
 	}
 	defer w.Close()

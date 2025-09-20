@@ -3,10 +3,10 @@ package core
 import (
 	"fmt"
 	"log/slog"
-	"path/filepath"
 	"time"
 
 	"github.com/gauravaditya/go-monorepo/api"
+	_ "github.com/gauravaditya/go-monorepo/docs/core" // swag docs path
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
@@ -18,7 +18,6 @@ func (app *App) RegisterRoutes() {
 		return
 	}
 
-	staticDir := filepath.Join("cmd", "core", "static")
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:4200",
 	}))
@@ -27,7 +26,6 @@ func (app *App) RegisterRoutes() {
 	})
 	// Swagger UI endpoint
 	app.Get("/swagger/*", swagger.HandlerDefault)
-	app.Static("/", staticDir)
 	app.Post("/register", app.RegisterHandler)
 	app.Post("/webhook", app.WebhookHandler)
 	app.Get("/events-data", app.EventsDataHandler)
@@ -39,8 +37,10 @@ func (app *App) RegisterRoutes() {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param count body object true "Number of events to register"
-// @Success 200 {object} map[string]interface{}
+// @Param request body api.RegisterRequest true "Number of events to register"
+// @Success 200 {object} api.RegisterResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /register [post]
 func (app *App) RegisterHandler(c *fiber.Ctx) error {
 	type req struct {
@@ -84,9 +84,11 @@ func (app *App) RegisterHandler(c *fiber.Ctx) error {
 // @Description Webhook endpoint for consumer to update event consumption
 // @Tags events
 // @Accept json
-// @Prodmake swaggeruce json
-// @Param event body EventData true "Event data"
-// @Success 200 {object} map[string]interface{}
+// @Produce json
+// @Param event body api.Event true "Event data"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /webhook [post]
 func (app *App) WebhookHandler(c *fiber.Ctx) error {
 	var event api.Event
@@ -107,7 +109,8 @@ func (app *App) WebhookHandler(c *fiber.Ctx) error {
 // @Description Returns all event consumption data
 // @Tags events
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} api.EventsDataResponse
+// @Failure 500 {object} map[string]string
 // @Router /events-data [get]
 func (app *App) EventsDataHandler(c *fiber.Ctx) error {
 	events, err := app.GetAllEvents()

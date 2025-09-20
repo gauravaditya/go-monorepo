@@ -19,8 +19,12 @@ type Config struct {
 
 var AppConfig Config
 
-func LoadConfig() {
-	if err := yaml.Unmarshal(configData, &AppConfig); err != nil {
+func (app *App) LoadConfig() {
+	if app.hasError() {
+		return
+	}
+
+	if err := yaml.Unmarshal(configData, &app.cfg); err != nil {
 		log.Fatalf("Failed to parse config: %v", err)
 	}
 }

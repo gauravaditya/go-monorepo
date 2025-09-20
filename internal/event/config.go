@@ -2,7 +2,7 @@ package event
 
 import (
 	_ "embed"
-	"log"
+	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
@@ -18,8 +18,12 @@ type Config struct {
 
 var AppConfig Config
 
-func LoadConfig() {
-	if err := yaml.Unmarshal(configData, &AppConfig); err != nil {
-		log.Fatalf("Failed to parse config: %v", err)
+func (app *App) LoadConfig() {
+	if app.hasError() {
+		return
+	}
+
+	if err := yaml.Unmarshal(configData, &app.cfg); err != nil {
+		app.err = fmt.Errorf("failed to parse event config.yaml: %w", err)
 	}
 }

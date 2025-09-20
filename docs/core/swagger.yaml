@@ -1,0 +1,124 @@
+definitions:
+  api.Event:
+    properties:
+      consumed:
+        type: boolean
+      name:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  api.EventsDataResponse:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/api.Event'
+        type: array
+    type: object
+  api.RegisterRequest:
+    properties:
+      count:
+        type: integer
+    type: object
+  api.RegisterResponse:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/api.Event'
+        type: array
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /events-data:
+    get:
+      description: Returns all event consumption data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.EventsDataResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get event consumption data
+      tags:
+      - events
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a number of events (calls event service)
+      parameters:
+      - description: Number of events to register
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register events
+      tags:
+      - events
+  /webhook:
+    post:
+      consumes:
+      - application/json
+      description: Webhook endpoint for consumer to update event consumption
+      parameters:
+      - description: Event data
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/api.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Webhook to update event consumed count
+      tags:
+      - events
+swagger: "2.0"

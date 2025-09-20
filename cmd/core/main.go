@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	_ "github.com/gauravaditya/go-monorepo/docs" // swag docs
+	// _ "github.com/gauravaditya/go-monorepo/docs" // swag docs
 	"github.com/gauravaditya/go-monorepo/internal/core"
 	"github.com/gauravaditya/go-monorepo/pkg/clicmd"
 	"github.com/gauravaditya/go-monorepo/pkg/server"

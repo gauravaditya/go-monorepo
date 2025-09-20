@@ -1,0 +1,48 @@
+definitions:
+  api.Event:
+    properties:
+      consumed:
+        type: boolean
+      name:
+        type: string
+      timestamp:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /events/produce:
+    post:
+      consumes:
+      - application/json
+      description: Parses the incoming request body as an event, marshals it to JSON,
+        and produces the event message.
+      parameters:
+      - description: Event payload
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/api.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event produced
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid payload
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to marshal event or produce event
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Produce an event
+      tags:
+      - events
+swagger: "2.0"
