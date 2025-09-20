@@ -19,10 +19,13 @@ func main() {
 	app := server.New("core-service")
 	coresvc := core.New(app)
 
-	root := clicmd.NewRoot("core-service")
-	root.AddCommand(clicmd.NewServer("core-service", coresvc))
+	cmd := clicmd.NewRootCmd(
+		"core-service",
+		clicmd.WithServerCmd(coresvc),
+		clicmd.WithVersionCmd(clicmd.Version),
+	)
 
-	if err := root.Execute(); err != nil {
+	if err := cmd.Execute(); err != nil {
 		slog.Error("Failed to start core service", "error", err)
 		os.Exit(1)
 	}

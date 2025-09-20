@@ -18,26 +18,14 @@ func main() {
 	app := server.New("event-service")
 	eventsvc := event.New(app)
 
-	root := clicmd.NewRoot("event-service")
-	root.AddCommand(clicmd.NewServer("event-service", eventsvc))
+	cmd := clicmd.NewRootCmd(
+		"event-service",
+		clicmd.WithServerCmd(eventsvc),
+		clicmd.WithVersionCmd(clicmd.Version),
+	)
 
-	if err := root.Execute(); err != nil {
+	if err := cmd.Execute(); err != nil {
 		slog.Error("Failed to start event service", "error", err)
 		os.Exit(1)
 	}
 }
-
-// func main() {
-// 	var port string
-// 	flag.StringVar(&port, "port", "8081", "port to listen on")
-// 	flag.Parse()
-// 	slog.Info("Starting event service", "port", port)
-// 	event.LoadConfig()
-// 	app := fiber.New()
-// 	app.Use(logger.New())
-// 	app.Get("/health", func(c *fiber.Ctx) error {
-// 		return c.SendString("OK")
-// 	})
-// 	event.RegisterRoutes(app)
-// 	app.Listen(fmt.Sprintf(":%s", port))
-// }

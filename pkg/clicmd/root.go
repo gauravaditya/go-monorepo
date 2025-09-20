@@ -2,39 +2,38 @@ package clicmd
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/spf13/cobra"
 )
 
-type Runner interface {
-	Run(host, port string) error
-}
+type Option func(*cobra.Command) *cobra.Command
 
-func NewRoot(name string) *cobra.Command {
-	return &cobra.Command{
+func NewRootCmd(name string, options ...Option) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   name,
 		Short: fmt.Sprintf("%s Service CLI", name),
 		Long:  fmt.Sprintf("%s Service API is a RESTful API.", name),
 	}
-}
 
-func NewServer(service string, runner Runner) *cobra.Command {
-	var host, port string
-
-	cmd := &cobra.Command{
-		Use:   "server",
-		Short: fmt.Sprintf("Start %s service", service),
-		Long:  fmt.Sprintf("Start %s service which provides RESTful APIs.", service),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			slog.Info("Starting service...", "service", service)
-
-			return runner.Run(host, port)
-		},
+	for _, opt := range options {
+		cmd = opt(cmd)
 	}
 
-	cmd.Flags().StringVar(&host, "host", "0.0.0.0", "Host to listen on")
-	cmd.Flags().StringVar(&port, "port", "8080", "Port to listen on")
-
 	return cmd
+}
+
+func WithServerCmd(runner Runner) Option {
+	return func(root *cobra.Command) *cobra.Command {
+		root.AddCommand(NewServer(root.Name(), runner))
+
+		return root
+	}
+}
+
+func WithVersionCmd(provider func() string) Option {
+	return func(root *cobra.Command) *cobra.Command {
+		root.AddCommand(NewVersionCommand(Version, root.OutOrStdout()))
+
+		return root
+	}
 }

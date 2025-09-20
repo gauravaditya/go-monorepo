@@ -13,11 +13,14 @@ func main() {
 	app := server.New("consumer-service")
 	consumersvc := consumer.New(app)
 
-	root := clicmd.NewRoot("consumer-service")
-	root.AddCommand(clicmd.NewServer("consumer-service", consumersvc))
+	cmd := clicmd.NewRootCmd(
+		"core-service",
+		clicmd.WithServerCmd(consumersvc),
+		clicmd.WithVersionCmd(clicmd.Version),
+	)
 
-	if err := root.Execute(); err != nil {
-		slog.Error("Failed to start core service", "error", err)
+	if err := cmd.Execute(); err != nil {
+		slog.Error("Failed to start consumer service", "error", err)
 		os.Exit(1)
 	}
 }
