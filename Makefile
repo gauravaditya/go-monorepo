@@ -8,7 +8,7 @@ BUILD_SHA ?= $(if $(CI_COMMIT_SHORT_SHA),$(CI_COMMIT_SHORT_SHA),$(shell git rev-
 BUILD_BRANCH ?= $(if $(CI_COMMIT_BRANCH),$(CI_COMMIT_BRANCH),$(shell git rev-parse --abbrev-ref HEAD))
 
 VERSION_LD_FLAGS=latestVersion=$(VERSION) commitSHA=$(BUILD_SHA) commitBranch=$(BUILD_BRANCH)
-BUILD_VERSION_LD_FLAGS ?= $(foreach arg,$(VERSION_LD_FLAGS),-X 'github.com/go-monorepo/pkg/clicmd.$(arg)')
+BUILD_VERSION_LD_FLAGS ?= $(foreach arg,$(VERSION_LD_FLAGS),-X 'github.com/gauravaditya/go-monorepo/pkg/clicmd.$(arg)')
 
 define gen_targets
 $(foreach service,$(SERVICES),$(1)/$(service))
@@ -16,6 +16,7 @@ endef
 
 DOCKER_BUILD_TARGETS=$(call gen_targets,docker)
 SWAGGER_DOCS_TARGETS=$(call gen_targets,docs)
+LOCAL_RUN_TARGETS=$(call gen_targets,local)
 
 .PHONY: all build up down core event consumer clean
 
@@ -27,29 +28,25 @@ up:
 down:
 	docker-compose down
 
-# core:
-# 	go run ./cmd/core/main.go server --port=8080
-
-# event:
-# 	go run ./cmd/event/main.go server --port=8081
-
-# consumer:
-# 	go run ./cmd/consumer/main.go server --port=8082
-
 clean:
-	rm -rf bin
+	@echo "Removing previous build artifacts..."
+	@rm -rf bin
 
+# Build all services
 build: $(SERVICES)
+
+$(SERVICES): %: build/%
 
 build/%:
 	@mkdir -p bin
 	@echo "Building service $* with version $(VERSION)..."
-	@echo "  LD Flags: $(BUILD_VERSION_LD_FLAGS)"
+
 	@CGO_ENABLED=$(CGO_ENABLED) $(GO_BIN) build \
 	-ldflags "$(BUILD_VERSION_LD_FLAGS)" \
 	-o bin/$* \
 	./cmd/$*
 
+# Build Docker images for services
 docker: $(DOCKER_BUILD_TARGETS)
 
 $(DOCKER_BUILD_TARGETS): %: run/%
@@ -73,4 +70,13 @@ run/docs/%:
 	$(eval route_paths := $(filter internal/$(@F)/%,$(swagger_api_file_dirs)))
 	$(foreach route,$(route_paths),swag init -o $(subst internal/,docs/,$(route)) -d $(route),$(api_path) -g routes.go -pdl 1 --parseInternal;)
 
-$(SERVICES): %: build/%
+# Run services locally with dynamic port assignment
+local: $(LOCAL_RUN_TARGETS)
+
+$(LOCAL_RUN_TARGETS): %: run/%
+
+run/local/%:
+	@echo "Running service $* locally..."
+	@read -p "Enter port for $*: " PORT; \
+	echo "Starting $* on port $$PORT..."; \
+	go run ./cmd/$*/main.go server --port=$$PORT
