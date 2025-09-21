@@ -26,7 +26,7 @@ func NewVersionCommand(provider func() string, outStream io.Writer) *cobra.Comma
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the version information",
-		Long:  fmt.Sprintf(`Print the version information.`),
+		Long:  "Print the version information.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := fmt.Fprint(outStream, provider())
 

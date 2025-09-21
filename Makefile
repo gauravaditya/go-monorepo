@@ -1,17 +1,25 @@
 # Makefile for go-monorepo: build, run, and local setup
+GO_BIN = $(shell which go)
 SERVICES=core event consumer
 swagger_api_file_dirs=$(foreach route,$(shell fd 'routes.go' internal/ | uniq), $(dir $(route)))
-SWAGGER_DOCS_SERVICES_TARGET=$(foreach service,$(SERVICES),docs/$(service))
+
+VERSION ?= $(if $(CI_COMMIT_SHORT_SHA),$(CI_COMMIT_SHORT_SHA),$(shell git describe --tags --always --dirty))
+BUILD_SHA ?= $(if $(CI_COMMIT_SHORT_SHA),$(CI_COMMIT_SHORT_SHA),$(shell git rev-parse --short HEAD))
+BUILD_BRANCH ?= $(if $(CI_COMMIT_BRANCH),$(CI_COMMIT_BRANCH),$(shell git rev-parse --abbrev-ref HEAD))
+
+VERSION_LD_FLAGS=latestVersion=$(VERSION) commitSHA=$(BUILD_SHA) commitBranch=$(BUILD_BRANCH)
+BUILD_VERSION_LD_FLAGS ?= $(foreach arg,$(VERSION_LD_FLAGS),-X 'github.com/go-monorepo/pkg/clicmd.$(arg)')
+
+define gen_targets
+$(foreach service,$(SERVICES),$(1)/$(service))
+endef
+
+DOCKER_BUILD_TARGETS=$(call gen_targets,docker)
+SWAGGER_DOCS_TARGETS=$(call gen_targets,docs)
 
 .PHONY: all build up down core event consumer clean
 
-all: build
-
-build:
-	go mod tidy
-	go build -o bin/core ./cmd/core
-	go build -o bin/event ./cmd/event
-	go build -o bin/consumer ./cmd/consumer
+all: clean build
 
 up:
 	docker-compose up -d
@@ -19,29 +27,50 @@ up:
 down:
 	docker-compose down
 
-core:
-	go run ./cmd/core/main.go server --port=8080
+# core:
+# 	go run ./cmd/core/main.go server --port=8080
 
-event:
-	go run ./cmd/event/main.go server --port=8081
+# event:
+# 	go run ./cmd/event/main.go server --port=8081
 
-consumer:
-	go run ./cmd/consumer/main.go server --port=8082
+# consumer:
+# 	go run ./cmd/consumer/main.go server --port=8082
 
 clean:
 	rm -rf bin
 
+build: $(SERVICES)
+
+build/%:
+	@mkdir -p bin
+	@echo "Building service $* with version $(VERSION)..."
+	@echo "  LD Flags: $(BUILD_VERSION_LD_FLAGS)"
+	@CGO_ENABLED=$(CGO_ENABLED) $(GO_BIN) build \
+	-ldflags "$(BUILD_VERSION_LD_FLAGS)" \
+	-o bin/$* \
+	./cmd/$*
+
+docker: $(DOCKER_BUILD_TARGETS)
+
+$(DOCKER_BUILD_TARGETS): %: run/%
+
+run/docker/%:
+	@echo "Building Docker image for service $* with version $(VERSION)..."
+	@echo "  LD Flags: $(BUILD_VERSION_LD_FLAGS)"
+	@docker build -t go-monorepo/$*:$(VERSION) . \
+	--build-arg SERVICE=$* \
+	--build-arg BUILD_VERSION_LD_FLAGS="$(BUILD_VERSION_LD_FLAGS)" 
+
 # Generate Swagger docs
-swagger:
-	swag init -g cmd/core/main.go -o docs
+docs: $(SWAGGER_DOCS_TARGETS)
+
+$(SWAGGER_DOCS_TARGETS): %: run/%
 
 run/docs/%:
 	@echo "Generating Swagger for $(@D) -> $(@F)... \n"
 
-	$(eval api_path := $(subst run/docs/,internal/,$@))
+	$(eval api_path := internal/$(@F))
 	$(eval route_paths := $(filter internal/$(@F)/%,$(swagger_api_file_dirs)))
 	$(foreach route,$(route_paths),swag init -o $(subst internal/,docs/,$(route)) -d $(route),$(api_path) -g routes.go -pdl 1 --parseInternal;)
 
-$(SWAGGER_DOCS_SERVICES_TARGET): %: run/%
-
-docs: $(SWAGGER_DOCS_SERVICES_TARGET)
+$(SERVICES): %: build/%
