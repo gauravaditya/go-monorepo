@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer
+  template:   
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: consumer
+        image: go-monorepo/consumer:latest
+        ports:
+        - containerPort: 80
+        imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer
+spec:
+  selector:
+    app: consumer
+  ports:
+  - protocol: TCP   
+    port: 80
+    targetPort: 80
+  type: ClusterIP

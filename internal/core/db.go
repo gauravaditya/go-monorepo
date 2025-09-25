@@ -11,15 +11,27 @@ import (
 
 var DB *gorm.DB
 
+func thisOrDefault(key, defaultVal string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
+	}
+
+	return defaultVal
+}
+
 func (app *App) InitDB() {
 	if app.hasError() {
 		return
 	}
 
-	dsn := os.Getenv("CORE_POSTGRES_DSN")
-	if dsn == "" {
-		dsn = "host=localhost user=postgres password=postgres dbname=eventsdb port=5432 sslmode=disable"
-	}
+	host := thisOrDefault("DB_HOST", "localhost")
+	port := thisOrDefault("DB_PORT", "5432")
+	usr := thisOrDefault("DB_USER", "postgres")
+	pwd := thisOrDefault("DB_HOST", "postgres")
+	dbname := thisOrDefault("DB_NAME", "postgres")
+	sslmode := thisOrDefault("SSL_MODE", "disable")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", host, usr, pwd, dbname, port, sslmode)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

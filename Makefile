@@ -53,10 +53,11 @@ $(DOCKER_BUILD_TARGETS): %: run/%
 
 run/docker/%:
 	@echo "Building Docker image for service $* with version $(VERSION)..."
-	@echo "  LD Flags: $(BUILD_VERSION_LD_FLAGS)"
+	@echo "	LD Flags: $(BUILD_VERSION_LD_FLAGS)"
 	@docker build -t go-monorepo/$*:$(VERSION) . \
 	--build-arg SERVICE=$* \
 	--build-arg BUILD_VERSION_LD_FLAGS="$(BUILD_VERSION_LD_FLAGS)" 
+	@docker tag go-monorepo/$*:$(VERSION) go-monorepo/$*:latest
 
 # Generate Swagger docs
 docs: $(SWAGGER_DOCS_TARGETS)
