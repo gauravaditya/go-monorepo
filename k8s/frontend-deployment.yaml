@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-frontend-app
+spec:
+  selector:
+    matchLabels:
+      app: my-frontend-app
+  template:
+    metadata:
+      labels:
+        app: my-frontend-app
+    spec:
+      containers:
+      - name: my-frontend-app
+        image: go-monorepo/frontend:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80

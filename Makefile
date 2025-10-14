@@ -59,6 +59,10 @@ run/docker/%:
 	--build-arg BUILD_VERSION_LD_FLAGS="$(BUILD_VERSION_LD_FLAGS)" 
 	@docker tag go-monorepo/$*:$(VERSION) go-monorepo/$*:latest
 
+docker/frontend:
+	@echo "Building docker image for $(@F)..."
+	@docker build -t go-monorepo/$(@F):$(VERSION) --file=$(@F)/Dockerfile $(@F)/
+	@docker tag go-monorepo/$(@F):$(VERSION) go-monorepo/$(@F):latest
 # Generate Swagger docs
 docs: $(SWAGGER_DOCS_TARGETS)
 
