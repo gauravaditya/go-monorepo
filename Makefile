@@ -14,10 +14,6 @@ BUILD_BRANCH ?= $(if $(CI_COMMIT_BRANCH),$(CI_COMMIT_BRANCH),$(shell git rev-par
 VERSION_LD_FLAGS=latestVersion=$(VERSION) commitSHA=$(BUILD_SHA) commitBranch=$(BUILD_BRANCH)
 BUILD_VERSION_LD_FLAGS ?= $(foreach arg,$(VERSION_LD_FLAGS),-X 'github.com/gauravaditya/go-monorepo/pkg/clicmd.$(arg)')
 
-BUILD_SERVICES=$(call gen_targets,build)
-
-all_dynamic_targets=$(BUILD_SERVICES)
-
 define gen_targets
 $(foreach service,$(SERVICES),$(1)/$(service))
 endef
@@ -27,11 +23,17 @@ define help_message
 	$(eval a2= $(shell echo $(1) | cut -d'/' -f2))
 
 	$(if $(findstring build/,$(1)),@printf "$(BLUE)%-40s$(NC) %s\n" "$(1)" " build $(a2) service",)
+	$(if $(findstring docker/,$(1)),@printf "$(BLUE)%-40s$(NC) %s\n" "$(1)" " build docker image for $(a2) service",)
+	$(if $(findstring local/,$(1)),@printf "$(BLUE)%-40s$(NC) %s\n" "$(1)" " run $(a2) service locally",)
+	$(if $(findstring docs/,$(1)),@printf "$(BLUE)%-40s$(NC) %s\n" "$(1)" " generate swagger dosc for $(a2) service",)
 endef
 
 DOCKER_BUILD_TARGETS=$(call gen_targets,docker)
 SWAGGER_DOCS_TARGETS=$(call gen_targets,docs)
 LOCAL_RUN_TARGETS=$(call gen_targets,local)
+BUILD_SERVICES=$(call gen_targets,build)
+
+all_dynamic_targets=$(BUILD_SERVICES) $(LOCAL_RUN_TARGETS) $(SWAGGER_DOCS_TARGETS) $(DOCKER_BUILD_TARGETS)
 
 .PHONY: all build up down core event consumer clean
 
